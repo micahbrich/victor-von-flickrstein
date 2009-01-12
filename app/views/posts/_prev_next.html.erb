@@ -1,0 +1,7 @@
+<% unless @prev.blank? %>
+<%= link_to 'Prev', post_path(@prev), :class => 'prev' %>
+<% end %>
+
+<% unless @next.blank? %>
+<%= link_to 'Next', post_path(@next), :class => 'next' %>
+<% end %>

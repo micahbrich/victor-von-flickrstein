@@ -1,0 +1,244 @@
+= Fleakr
+
+== Description
+
+A small, yet powerful, gem to interface with Flickr photostreams
+
+== Installation
+
+=== Stable
+
+    sudo gem install fleakr
+
+=== Bleeding Edge
+
+    sudo gem install reagent-fleakr --source=http://gems.github.com
+    
+Or ...
+
+    $ git clone git://github.com/reagent/fleakr.git
+    $ cd fleakr
+    $ rake gem && sudo gem install pkg/fleakr-<version>.gem
+
+== Usage
+
+To get started, you'll need to grab an API key from Flickr to at least perform any of
+the non-authenticated, read-only calls.  Head on over to the Flickr site to grab one, I'll
+be here when you get back: http://www.flickr.com/services/api/misc.api_keys.html
+
+Now that you have your key, you can get things rolling with irb and the fleakr gem:
+
+    $ irb -r rubygems
+    >> require 'fleakr'
+    
+Then, set your API key (only need to do this once per session):
+
+    >> Fleakr.api_key = '<your api key here>'
+
+=== A Brief Tour
+
+With just an API key, you have the ability to retrieve a substantial amount of data 
+about users, their photosets, photos, contacts, and groups.  Let's start by finding a 
+user by his username:
+
+    >> user = Fleakr.user('the decapitator')
+    => #<Fleakr::Objects::User:0x692648 @username="the decapitator", @id="21775151@N06">
+
+Or by email:
+
+    >> user = Fleakr.user('user@host.com')
+    => #<Fleakr::Objects::User:0x11f484c @username="bckspcr", @id="84481630@N00">
+
+Once you have a user, you can find his associated sets:
+
+    >> user.sets
+    => [#<Fleakr::Objects::Set:0x671358 @title="The Decapitator", @description="">, 
+        #<Fleakr::Objects::Set:0x66d898 @title="londonpaper hijack", ...
+
+His individual photos:
+
+    >> user.photos.first
+    => #<Fleakr::Objects::Photo:0x161b024 @title="\"Be Fabulous\"" ... >
+
+Or contacts:
+
+    >> user.contacts.first
+    => #<Fleakr::Objects::User:0x19039bc @username=".schill",
+        @id="12289718@N00", @icon_farm="1", @icon_server="4">
+
+Or his groups if you would like:
+    
+    >> user.groups
+    => [#<Fleakr::Objects::Group:0x11f2330 ..., 
+        #<Fleakr::Objects::Group:0x11f2308 ...
+    >> user.groups.first.name
+    => "Rural Decay"
+    >> user.groups.first.id
+    => "14581414@N00"
+
+Groups also contain photos:
+
+    >> user.groups.last.photos.first.title
+    => "Welcome To The Machine"
+
+When accessing a set, you can also grab all the photos that are in that set:
+
+    >> user.sets.first
+    => #<Fleakr::Objects::Set:0x1195bbc @title="The Decapitator", @id="72157603480986566", @description="">
+    >> user.sets.first.photos.first
+    => #<Fleakr::Objects::Photo:0x1140108 ... >
+    >> user.sets.first.photos.first.title
+    => "Untitled1"
+    
+=== Photos
+
+Each photo object contains metadata about a collection of images, each representing different
+sizes.  Once we have a single photo:
+    
+    >> photo = user.photos.first
+    => #<Fleakr::Objects::Photo:0x161b024 @title="\"Be Fabulous\"" ... >
+    
+We can get information about one of the sizes:
+
+    >> photo.small
+    => #<Fleakr::Objects::Image:0x1768f1c @height="172", @size="Small", @width="240",
+        @url="http://farm4.static.flickr.com/3250/2924549350_cbc1804258_m.jpg",  
+        @page="http://www.flickr.com/photos/the_decapitator/2924549350/sizes/s/">
+
+Grab the URL for the image itself:
+
+    >> photo.small.url
+    => "http://farm4.static.flickr.com/3250/2924549350_cbc1804258_m.jpg"
+    
+Or grab the URL for its page on the Flickr site:
+    
+    >> photo.small.page
+    => "http://www.flickr.com/photos/the_decapitator/2924549350/sizes/s/"
+    
+Other sizes are available (:square, :thumbnail, :small, :medium, :large, :original) and
+are accessed in the same way:
+    
+    >> photo.original.url
+    => "http://farm4.static.flickr.com/3250/2924549350_1cf67c2d47_o.jpg"    
+
+=== Saving Images
+
+If a photo interests you, save it down to a directory of your choosing:
+
+    >> photo.original.save_to('/tmp')
+    => #<File:/tmp/2924549350_1cf67c2d47_o.jpg (closed)>
+    
+Similarly, you can save down entire sets.  Just specify the target directory and the size 
+of the images you're interested in:
+
+    >> user.sets.first.save_to('/tmp', :square)
+    => [#<Fleakr::Objects::Photo:0x1187a1c @secret="715587b2cb" ...
+    
+This creates a subdirectory within the target directory based on the set's name and preserves
+the original order of the photos:
+    
+    >> Dir["/tmp/#{user.sets.first.title}/*.jpg"].map
+    => ["/tmp/The Decapitator/01_2117922283_715587b2cb_s.jpg", 
+        "/tmp/The Decapitator/02_2125604584_9c09348fd6_s.jpg", 
+        "/tmp/The Decapitator/03_2118696542_8af5763bde_s.jpg", ... ]
+
+=== Searching
+
+If you would prefer to just search photos, you can do that with search text:
+
+    >> photos = Fleakr.search('ponies!!')
+    => [#<Fleakr::Objects::Photo:0x11f4e64 @title="hiroshima atomic garden", @id="3078234390">, 
+        #<Fleakr::Objects::Photo:0x11f4928 @title="PONYLOV", @id="3077360853">, ...
+    >> photos.first.title
+    => "hiroshima atomic garden"
+
+You can also search based on tags:
+
+    >> photos = Fleakr.search(:tags => 'macro')
+    >> photos.first.title
+    => "Demure"
+    >> photos.first.id
+    => "3076049945"
+
+Searches can also be scoped to other entities in the system (namely Users and Groups):
+
+    >> user.groups.first.search('awesome')
+    => [#<Fleakr::Objects::Photo:0x18cb4cc @server_id="2012", @id="2181921273",
+         @farm_id="3", @title="", @secret="634eda7521">, ... 
+    >> user.search('serpent')
+    => [#<Fleakr::Objects::Photo:0x18a6960 @server_id="41", @id="81370156",
+        @farm_id="1", @title="Clear and Serpent Danger", @secret="013091582a">]
+
+=== Authenticated Calls & Uploads
+
+While read-only access to the API gets you quite a bit of data, you'll need to generate an
+authentication token if you want access to the more powerful features (like uploading your 
+own photos).  
+
+Assuming you've already applied for a key, go back and make sure you have the right settings
+to get your auth token.  Click on the 'Edit key details' link and ensure that:
+
+1. Your application description and notes are up-to-date
+1. The value for 'Authentication Type' is set to 'Mobile Application'
+1. The value for 'Mobile Permissions' is set to either 'write' or 'delete'
+
+Once this is set, you'll see your Authentication URL on the key details page (it will look
+something like http://www.flickr.com/auth-534525246245).  Paste this URL into your browser and 
+confirm access to get your mini-token. Now you're ready to make authenticated requests:
+
+  require 'rubygems'
+  require 'fleakr'
+
+  Fleakr.api_key       = 'ABC123'
+  Fleakr.shared_secret = 'sekrit' # Available with your key details on the Flickr site
+  Fleakr.mini_token    = '362-133-214'
+
+  Fleakr.upload('/path/to/my/photo.jpg')
+  Fleakr.token.value # => "34132412341235-12341234ef34"
+
+Once you use the mini-token once, it is no longer available.  To use the generated auth_token
+for future requests, just set Fleakr.auth_token to the generated value.
+
+== Roadmap / TODO
+
+=== 0.4.x
+
+* Allow passing of parameters to file uploads to allow for access control / naming
+* Implement remaining bits of person and photo-related API calls (read-only)
+* Automatically sign all calls (if we have a secret), authenticate all calls (if we have a token)
+
+=== 0.5.x
+
+* Implement asynchronous file upload / replacement w/ ticket checking
+* Provide a better searching interface
+
+=== Future
+
+* Implement save-able search results (e.g. Fleakr.search('ponies').save_to('/path', :medium))
+* Implement deeper associations for core elements (e.g. tags / etc..)
+* Implement write methods for photos & photosets
+
+== License
+
+Copyright (c) 2008 Patrick Reagan (reaganpr@gmail.com)
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.

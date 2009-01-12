@@ -1,0 +1,7 @@
+site_name: <the name of your site>
+site_address: <the URL of your site>
+site_description: <how you would describe your site to a visitor>
+author: <your name, however youd like it displayed>
+author_link: <mailto:your@email.com> or <http://www.yourdomain.com>
+
+password: <your password to log in as admin>

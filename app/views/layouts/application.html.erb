@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+	<title><%= @site_name %> <%= @title %></title>
+	<%= auto_discovery_link_tag(:rss, :action => 'feed') %>
+	<%= stylesheet_link_tag 'awesome' %>
+</head>
+
+<body>
+  <% if [:notice] %>
+    <div id="flash"><%= flash[:notice] %></div>
+  <% end %>
+  
+  <h1><%= link_to @site_name, root_path %></h1>
+  <ul id="menu">
+    <li><%= link_to 'home', root_path %></li>
+    <li><%= link_to 'archive', archive_path %></li>
+    <li><%= link_to 'about', about_path %></li>
+    <li><%= link_to 'feed', feed_path([:xml]) %></li>
+    
+  </ul>
+  <hr/>
+  <%= yield %>
+
+  <hr/>
+  <div id="footer">
+    <p>All content &copy; <%= link_to @author,  @author_link %>, <%= Time.now.year %>.
+      <% if admin? %>
+        <%= link_to 'Log Out.', logout_path %>
+      <% else %>
+        <%= link_to 'Admin.', login_path %>
+      <% end %>
+    </p>
+</body>
+</html>

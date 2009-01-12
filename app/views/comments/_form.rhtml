@@ -1,0 +1,23 @@
+<% form_for([@post, @comment]) do |f| %>
+<%= f.error_messages :header_message => "Please Try Again!", :message => "I had some problems sending your comment:" %>
+
+  <p>
+    <%= f.label :name %><span class="required">*</span><br />
+    <%= f.text_field :name %>
+  </p>
+  <p>
+    <%= f.label :email %><span class="required">*</span> <small>(won't be displayed)</small><br />
+    <%= f.text_field :email %>
+  </p>
+  <p>
+    <%= f.label :website %><br />
+    <%= f.text_field :website %>
+  </p>
+  <p>
+    <%= f.label :body %><span class="required">*</span> <small><a href="http://hobix.com/textile/quick.html" target="_blank">how to format</a></small><br />
+    <%= f.text_area :body %>
+  </p>
+  <p>
+    <%= f.submit "Submit" %>
+  </p>
+<% end %>

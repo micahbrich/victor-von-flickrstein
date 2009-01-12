@@ -1,0 +1,47 @@
+h1. Victor von Flickrstein
+
+bq. I am by birth a Designer; and my family is one of the most distinguished of that republic. 
+
+What I have created here is nothing short of a monster. After finally signing up for a Flickr Pro account, I realized that it was a lot of work to update both Flickr and my personal photoblog. I got to thinking.
+
+I thought, Flickr has hi-res archived images. Flickr makes thumbnails automatically. There's a huge community behind Flickr. Their job is to host images, I'm sure their servers are better than mine. 
+
+Now, I like having a photoblog. I like the format, I like being in charge of the design, and a handful of people read it on a regular basis to keep up with my life. Telling them I'd switched to Flickr meant losing probably all of those readers. No. 
+
+I should make my photoblog run off Flickr!
+
+h2. What He Is
+
+In his heart, Victor's a photoblog front-end. Every 6 hours, he checks a specific photoset on my Flickr account to update my blog for me. It looks like I'm posting like normal, when really all I do is update my Flickr account.
+
+He only pulls and stores metadata - the image title, description, posted date, and URL's for the both a huge image and a thumbnail. The benefit of storing that info is that he doesn't have to make an API call anytime anyone looks at my blog (which is nice for Flickr and makes loading a little faster). And, since each photo now has a Model, I can do whatever I want – specifically add a Comment. Flickr has comments, yeah, but my readers aren't gonna sign up with Flickr just to tell me they liked my latest photo, you know?
+
+h2. His Guts
+
+He uses a couple awesome gems that he's tucked nicely into his vendor folder. There's "fleakr":http://github.com/reagent/fleakr/tree/master , "will_paginate":http://github.com/mislav/will_paginate/tree/master, and daemons. My server uses Rails 2.1, too, so that's in there. 
+
+h3. Config Files
+
+In /config, look for *sample_flickr.yml* – that's your api, flickr user email, and what photoset you want to pull from.
+
+Also, look for *sample_app_info.yml* – that's stuff like, your site name, your email, etc.
+
+h3. How He Works
+
+Most of the work is done via the daemon in 'lib/daemons/fetchr.rb' It finds you, then your photoset, then does a block for each photo inside. If it doesn't find it, it makes a new record in the Post model with the following:
+
+* *flickr_id* for the photo's id
+* *url* for the photo's URL
+* *title* for the image's title
+* *description* for the image's description
+* *image* for the image's large URL
+* *thumb* for the image's small URL
+
+
+If it finds it, and the flickr photo's updated_at is different from the photo's, it'll update its attributes.
+
+h3. More Info
+
+Because I'm honestly no expert, refer to "Railscast #129":http://railscasts.com/episodes/129-custom-daemon for more info on starting, stopping, and generally how the daemon is supposed to work.
+
+h4. This shite is free. Take it, mess with it, fix it. Give me credit if you'd like. All yours.

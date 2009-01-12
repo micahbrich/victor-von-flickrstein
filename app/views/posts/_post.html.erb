@@ -1,0 +1,37 @@
+<p>
+<%= render :partial => 'prev_next' %>
+</p>
+
+<%= image_tag @post.image, :class => 'image' %>
+<h5><%= @post.created_at.strftime("%A %B %d, %Y") %> via <%= link_to 'flickr', @post.url %></h5>
+<h2><%= link_to @post.title, post_path(@post) %></h2>
+
+<div id="description"><%= textilize( @post.description) %></div>
+
+<p>
+<%= render :partial => 'prev_next' %>
+</p>
+
+<hr/>
+<h3>Comments</h3>
+
+<%= render :partial => 'comments/form' %>
+
+<ul id="comments">
+  <% @post.comments.each do |comment| %>
+    <li id="comment-#{comment.id}">
+      <% if comment.website? %>
+        <h4><%= link_to comment.name, comment.website %></h4>
+      <% else %>
+        <h4><%= comment.name %></h4>
+      <% end %>
+      
+      <% if admin? %>
+      <p><small><%= link_to 'Delete', post_comment_path(@post, comment), :method => :delete, :confirm => 'Are you sure?' %></small></p>
+      <% end %>
+      
+      
+      <%= textilize(comment.body) %>
+    </li>
+  <% end %>
+</ul>
